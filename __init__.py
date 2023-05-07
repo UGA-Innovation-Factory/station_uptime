@@ -38,6 +38,7 @@ class StationUptimeEntity(BinarySensorEntity):
         self._attr_name = name
         self._attr_unique_id = name
         self._attr_icon = "mdi:hammer-screwdriver"
+        self._attr_should_poll = False
 
     @property
     def is_on(self):
@@ -66,11 +67,16 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     async def async_start_assembly(call):
         entity_id = call.data["entity_id"]
-        component.get_entity(entity_id).start_assembly()
+        entity_obj = component.get_entity(entity_id)
+        entity_obj.start_assembly()
+        entity_obj.async_write_ha_state()
+
 
     async def async_finish_assembly(call):
         entity_id = call.data["entity_id"]
-        component.get_entity(entity_id).finish_assembly()
+        entity_obj = component.get_entity(entity_id)
+        entity_obj.finish_assembly()
+        entity_obj.async_write_ha_state()
 
     hass.services.async_register(
         DOMAIN, "start_assembly", async_start_assembly, schema=vol.Schema({vol.Required("entity_id"): cv.string})
