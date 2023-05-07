@@ -1,0 +1,17 @@
+start_assembly:
+  description: Start assembly for a manufacturing station.
+  fields:
+    entity_id:
+      description: The entity ID of the manufacturing station.
+      example: station_uptime.station_1
+      required: true
+      type: string
+
+finish_assembly:
+  description: Finish assembly for a manufacturing station.
+  fields:
+    entity_id:
+      description: The entity ID of the manufacturing station.
+      example: station_uptime.station_1
+      required: true
+      type: string
