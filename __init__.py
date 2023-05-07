@@ -46,11 +46,11 @@ class StationUptimeEntity(BinarySensorEntity):
 
     def start_assembly(self):
         self._is_on = True
-        self.schedule_update_ha_state()
+        self.schedule_update_ha_state(True)
 
     def finish_assembly(self):
         self._is_on = False
-        self.schedule_update_ha_state()
+        self.schedule_update_ha_state(True)
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
