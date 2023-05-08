@@ -71,7 +71,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
         entity_obj.start_assembly()
         entity_obj.async_write_ha_state()
 
-
     async def async_finish_assembly(call):
         entity_id = call.data["entity_id"]
         entity_obj = component.get_entity(entity_id)
