@@ -2,11 +2,10 @@ import logging
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-from homeassistant.core import HomeAssistant
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, PLATFORM_SCHEMA, BinarySensorEntity
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import CONF_NAME
-from homeassistant.helpers.entity_component import EntityComponent
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.helpers.entity_platform import async_add_entities
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,62 +19,32 @@ STATION_SCHEMA = vol.Schema(
     }
 )
 
-CONFIG_SCHEMA = vol.Schema(
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
-        DOMAIN: vol.Schema(
-            {
-                vol.Required(CONF_STATIONS): vol.All(cv.ensure_list, [STATION_SCHEMA]),
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
+        vol.Required(CONF_STATIONS): vol.All(cv.ensure_list, [STATION_SCHEMA]),
+    }
 )
 
 
-class StationUptimeEntity(BinarySensorEntity):
-    def __init__(self, name):
-        self._is_on = False
-        self._attr_name = name
-        self._attr_unique_id = name
-        self._attr_icon = "mdi:hammer-screwdriver"
-        self._attr_should_poll = False
-
-    @property
-    def is_on(self):
-        """If the switch is currently on or off."""
-        return self._is_on
-
-    def start_assembly(self):
-        self._is_on = True
-        self.schedule_update_ha_state(True)
-
-    def finish_assembly(self):
-        self._is_on = False
-        self.schedule_update_ha_state(True)
-
-
-async def async_setup(hass: HomeAssistant, config: dict):
-    stations = config[DOMAIN].get(CONF_STATIONS)
-    component = EntityComponent(_LOGGER, DOMAIN, hass)
+async def async_setup_platform(hass: HomeAssistant, config: dict, async_add_entities, discovery_info=None):
+    stations = config.get(CONF_STATIONS)
 
     entities = []
     for station in stations:
-        entity = StationUptimeEntity(station[CONF_NAME])
+        entity = BinarySensorEntity(station[CONF_NAME])
         entities.append(entity)
 
-    await component.async_add_entities(entities)
+    async_add_entities(entities)
 
     async def async_start_assembly(call):
         entity_id = call.data["entity_id"]
-        entity_obj = component.get_entity(entity_id)
-        entity_obj.start_assembly()
-        entity_obj.async_write_ha_state()
+        entity_obj = hass.states.get(entity_id)
+        hass.states.async_set(entity_id, 'on', entity_obj.attributes)
 
     async def async_finish_assembly(call):
         entity_id = call.data["entity_id"]
-        entity_obj = component.get_entity(entity_id)
-        entity_obj.finish_assembly()
-        entity_obj.async_write_ha_state()
+        entity_obj = hass.states.get(entity_id)
+        hass.states.async_set(entity_id, 'off', entity_obj.attributes)
 
     hass.services.async_register(
         DOMAIN, "start_assembly", async_start_assembly, schema=vol.Schema({vol.Required("entity_id"): cv.string})
