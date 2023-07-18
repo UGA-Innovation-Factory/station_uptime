@@ -5,7 +5,9 @@ import voluptuous as vol
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, PLATFORM_SCHEMA, BinarySensorEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import CONF_NAME
-from homeassistant.helpers.entity_platform import async_add_entities
+
+from homeassistant.helpers.entity_component import EntityComponent
+from homeassistant.components.binary_sensor import BinarySensorEntity
 
 _LOGGER = logging.getLogger(__name__)
 
